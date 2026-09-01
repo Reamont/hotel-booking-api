@@ -32,6 +32,5 @@ async def create_booking(
     await db.commit()
     return {"status": "OK"}
 
-#ffff
 
 
