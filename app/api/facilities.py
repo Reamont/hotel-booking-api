@@ -11,7 +11,7 @@ async def get_all(db: DBdep):
 
 
 @router.post("")
-async def create_facility(id: int, db: DBdep, facility_data: FacilitiesAdd = Body()):
+async def create_facility(db: DBdep, facility_data: FacilitiesAdd = Body()):
     facility = await db.facilities.add(facility_data)
     await db.commit()
 

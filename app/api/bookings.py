@@ -19,7 +19,7 @@ async def get_me(user_id: UserIdDep, db: DBdep):
 async def create_booking(
     user_id: UserIdDep,
     db: DBdep,
-    booking_data: BookingAddRequest = Body()
+    booking_data: BookingAddRequest
 ):
     room = await db.rooms.get_one_or_none(id=booking_data.room_id)
     room_price: int = room.price
