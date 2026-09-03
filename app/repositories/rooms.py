@@ -1,11 +1,7 @@
 from datetime import date
 
-from sqlalchemy import select
-from sqlalchemy import func
-
 from app.repositories.base import BaseRepository
 from app.models.rooms import RoomsOrm
-from app.models.bookings import BookingOrm
 from app.schemas.rooms import Room
 
 from app.repositories.utils import rooms_ids_for_booking
