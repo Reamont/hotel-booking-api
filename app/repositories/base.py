@@ -17,7 +17,7 @@ class BaseRepository:
     async def get_one_or_none(self, **filter_by):
         query = select(self.model).filter_by(**filter_by)
         result = await self.session.execute(query)
-        model =result.scalars().one_or_none()
+        model = result.scalars().one_or_none()
         return self.schema.model_validate(model)
 
     async def get_filtered(self, *filter, **filter_by):

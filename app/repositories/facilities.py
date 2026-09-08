@@ -2,8 +2,6 @@ from app.repositories.base import BaseRepository
 from app.models.facilities import FacilitiesOrm, RoomsFacilitiesOrm
 from app.schemas.facilities import Facilities, RoomsFacilities
 
-from app.repositories.utils import get_facilities
-
 from sqlalchemy import select, delete, insert
 
 class FacilitiesRepository(BaseRepository):

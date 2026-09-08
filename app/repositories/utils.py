@@ -4,8 +4,6 @@ from sqlalchemy import select, func
 
 from app.models.bookings import BookingOrm
 from app.models.rooms import RoomsOrm
-from app.models.facilities import RoomsFacilitiesOrm
-from app.repositories.facilities import RoomsFacilitiesRepository
 
 
 def rooms_ids_for_booking(

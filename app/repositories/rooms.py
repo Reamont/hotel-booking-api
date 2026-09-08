@@ -1,8 +1,11 @@
 from datetime import date
 
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+
 from app.repositories.base import BaseRepository
 from app.models.rooms import RoomsOrm
-from app.schemas.rooms import Room
+from app.schemas.rooms import Room, RoomsWithRels
 
 from app.repositories.utils import rooms_ids_for_booking
 
@@ -18,5 +21,24 @@ class RoomRepository(BaseRepository):
             date_to: date
             ):
         rooms_ids_to_get = (rooms_ids_for_booking(date_from, date_to, hotel_id))
-        return await self.get_filtered(RoomsOrm.id.in_(rooms_ids_to_get))
+        query = (
+            select(self.model)
+            .options(selectinload(self.model.facilities))
+            .filter(RoomsOrm.id.in_(rooms_ids_to_get))
+        )
+        result = await self.session.execute(query)
+        return [RoomsWithRels.model_validate(model) for model in result.scalars().all()]
+
+    async def get_one_or_none_with_rels(self, **filter_by):
+        query = (
+                    select(self.model)
+                    .options(selectinload(self.model.facilities))
+                    .filter_by(**filter_by)
+                )
+
+        result = await self.session.execute(query)
+        model = result.scalars().one_or_none()
+        if not model:
+            return None
+        return RoomsWithRels.model_validate(model)
         
