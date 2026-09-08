@@ -17,9 +17,6 @@ from app.api.facilities import router as router_facilities
 from app.database import Base, engine
 from app.config import settings
 
-from app.models.hotels import HotelsOrm
-from app.models.rooms import RoomsOrm
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print(settings.DB_URL)
