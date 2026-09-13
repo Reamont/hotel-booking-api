@@ -6,6 +6,8 @@ from contextlib import asynccontextmanager
 import sys
 from pathlib import Path
 
+from app.init import redis_manager
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 from app.api.hotels import router as router_hotels
@@ -22,9 +24,11 @@ async def lifespan(app: FastAPI):
     print(settings.DB_URL)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    await redis_manager.connect()
     print("Приложение запущено")
     yield
     await engine.dispose()
+    await redis_manager.close()
     print("Приложение остановлено")
 
 app = FastAPI(lifespan=lifespan)
