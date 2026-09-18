@@ -3,6 +3,8 @@ from fastapi.openapi.docs import get_swagger_ui_html
 import uvicorn
 from contextlib import asynccontextmanager
 
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
 import sys
 from pathlib import Path
 
@@ -24,6 +26,7 @@ async def lifespan(app: FastAPI):
     print(settings.DB_URL)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    FastAPICache.init(RedisBackend(redis_manager.redis), prefix="fastapi-cache")
     await redis_manager.connect()
     print("Приложение запущено")
     yield
