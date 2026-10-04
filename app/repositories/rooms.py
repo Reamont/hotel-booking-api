@@ -4,12 +4,13 @@ from sqlalchemy.orm import selectinload
 from app.repositories.base import BaseRepository
 from app.models.rooms import RoomsOrm
 from app.repositories.utils import rooms_ids_for_booking
-from app.repositories.mappers.mappers import RoomWithRelsDataMapper
+from app.repositories.mappers.mappers import RoomDataMapper
 
 
 class RoomRepository(BaseRepository):
     model = RoomsOrm
-    mapper = RoomWithRelsDataMapper
+    mapper = RoomDataMapper
+
 
     async def get_filtered_by_time(
             self,

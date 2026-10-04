@@ -15,6 +15,10 @@ class HotelDataMapper(DataMapper):
     db_model = HotelsOrm
     schema = Hotel
 
+class RoomDataMapper(DataMapper):
+    db_model = RoomsOrm
+    schema = Room
+
 class RoomWithRelsDataMapper(DataMapper):
     db_model = RoomsOrm
     schema = Room
@@ -35,7 +39,7 @@ class FacilityDataMapper(DataMapper):
     db_model = FacilitiesOrm
     schema = Facilities
 
-class RoomDataMapper(DataMapper):
+class RoomFacilitiesDataMapper(DataMapper):
     db_model = RoomsFacilitiesOrm
     schema = RoomsFacilities
 

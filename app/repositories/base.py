@@ -27,7 +27,9 @@ class BaseRepository:
         query = select(self.model).filter_by(**filter_by)
         result = await self.session.execute(query)
         model = result.scalars().one_or_none()
-        return self.schema.model_validate(model)
+        if model is None:
+            return None
+        return self.mapper.map_to_domain_entity(model)
 
     async def add(self, data: BaseModel):
         add_data_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
