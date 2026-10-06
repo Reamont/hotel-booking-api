@@ -2,8 +2,10 @@ import os
 import json
 os.environ["MODE"] = "TEST"
 
-import pytest
+from app.tasks.celery_app import celery_instance
 
+import pytest
+from app.api.dependencies import get_db
 from app.schemas.hotels import HotelAdd
 from app.schemas.rooms import RoomAdd
 from app.config import settings
@@ -20,12 +22,16 @@ from app.database import async_session_maker_null_pool
 def check_test_mode():
     assert settings.MODE == "TEST"
 
+async def get_db_null_pool():
+    async with DBManager(session_factory=async_session_maker_null_pool) as db:
+            yield db
 
 @pytest.fixture(scope="function")
 async def db():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
         yield db
 
+app.dependency_overrides[get_db] = get_db_null_pool
 
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database(check_test_mode):
@@ -59,3 +65,9 @@ async def create_user(ac, setup_database):
             "email": "minimax@mail.ru",
             "password": "91867527"
             })
+
+
+celery_instance.conf.update(
+    task_always_eager=True,
+    task_eager_propagates=True,
+)
