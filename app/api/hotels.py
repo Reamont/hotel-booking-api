@@ -22,8 +22,8 @@ async def get_hotels(
         db: DBdep,
         title: str | None = Query(None, description="Название отеля"),
         location: str | None = Query(None, description="Расположение отеля"),
-        date_from: date = Query(example="2024-08-01"),
-        date_to: date = Query(example="2024-08-10")
+        date_from: date = Query(examples=["2024-08-01"]),
+        date_to: date = Query(examples=["2024-08-10"])
 ):
     per_page = pagination.per_page or 10
     return await db.hotels.get_filtered_by_time(date_from=date_from,
@@ -65,7 +65,7 @@ async def create_hotel(db: DBdep, hotel_data: HotelAdd = Body(openapi_examples={
 
 
 @router.put("/{hotel_id}")
-async def edit_hotel(hotel_id: int, hotel_data: Hotel, db: DBdep):
+async def edit_hotel(hotel_id: int, hotel_data: HotelAdd, db: DBdep):
     await db.hotels.update(hotel_data, id=hotel_id)
     await db.commit()
     return {"status": "OK"}
@@ -80,7 +80,7 @@ async def partially_edit_hotel(
         hotel_data: HotelPATCH,
         db: DBdep
 ):
-    db.hotels.update(hotel_data, id = hotel_id, exclude_unset = True)
+    await db.hotels.update(hotel_data, id = hotel_id, exclude_unset = True)
     await db.commit()
     return {"status": "OK"}
 

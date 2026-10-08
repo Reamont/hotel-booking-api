@@ -8,15 +8,16 @@ from fastapi_cache.backends.redis import RedisBackend
 import sys
 from pathlib import Path
 
-from app.init import redis_manager
-
 sys.path.append(str(Path(__file__).parent.parent))
+
+from app.init import redis_manager
 
 from app.api.hotels import router as router_hotels
 from app.api.auth import router as router_auth
 from app.api.rooms import router as router_rooms
 from app.api.bookings import router as router_bookings
 from app.api.facilities import router as router_facilities
+from app.api.images import router as router_images
 
 from app.database import Base, engine
 from app.config import settings
@@ -26,8 +27,8 @@ async def lifespan(app: FastAPI):
     print(settings.DB_URL)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    FastAPICache.init(RedisBackend(redis_manager.redis), prefix="fastapi-cache")
     await redis_manager.connect()
+    FastAPICache.init(RedisBackend(redis_manager.redis), prefix="fastapi-cache")
     print("Приложение запущено")
     yield
     await engine.dispose()
@@ -42,6 +43,7 @@ app.include_router(router_hotels)
 app.include_router(router_rooms)
 app.include_router(router_bookings)
 app.include_router(router_facilities)
+app.include_router(router_images)
 
 
 @app.get("/docs", include_in_schema=False)

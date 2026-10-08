@@ -1,7 +1,7 @@
 from app.repositories.base import BaseRepository
 from app.models.facilities import FacilitiesOrm, RoomsFacilitiesOrm
 from app.repositories.mappers.mappers import FacilityDataMapper
-from app.repositories.mappers.mappers import RoomDataMapper
+from app.repositories.mappers.mappers import RoomFacilitiesDataMapper
 
 from sqlalchemy import select, delete, insert
 
@@ -12,7 +12,7 @@ class FacilitiesRepository(BaseRepository):
 
 class RoomsFacilitiesRepository(BaseRepository):
     model = RoomsFacilitiesOrm
-    mapper = RoomDataMapper
+    mapper = RoomFacilitiesDataMapper
 
     async def set_room_facilities(self, room_id: int, facilities_ids: list[int]) -> None:
         get_current_facilities_ids_query = (

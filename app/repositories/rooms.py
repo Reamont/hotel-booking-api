@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload
 from app.repositories.base import BaseRepository
 from app.models.rooms import RoomsOrm
 from app.repositories.utils import rooms_ids_for_booking
-from app.repositories.mappers.mappers import RoomDataMapper
+from app.repositories.mappers.mappers import RoomDataMapper, RoomWithRelsDataMapper
 
 
 class RoomRepository(BaseRepository):
@@ -25,7 +25,7 @@ class RoomRepository(BaseRepository):
             .filter(RoomsOrm.id.in_(rooms_ids_to_get))
         )
         result = await self.session.execute(query)
-        return [self.mapper.map_to_domain_entity(model) for model in result.scalars().all()]
+        return [RoomWithRelsDataMapper.map_to_domain_entity(model) for model in result.scalars().all()]
 
     async def get_one_or_none_with_rels(self, **filter_by):
         query = (
@@ -38,5 +38,5 @@ class RoomRepository(BaseRepository):
         model = result.scalars().one_or_none()
         if not model:
             return None
-        return self.mapper.map_to_domain_entity(model)
+        return RoomWithRelsDataMapper.map_to_domain_entity(model)
         

@@ -22,6 +22,8 @@ async def create_booking(
     booking_data: BookingAddRequest
 ):
     room = await db.rooms.get_one_or_none(id=booking_data.room_id)
+    if room is None:
+        raise HTTPException(status_code=404, detail="Номер не найден")
     room_price: int = room.price
 
     add_booking_data = BookingAdd(user_id=user_id,
