@@ -30,4 +30,4 @@ class BookingRepository(BaseRepository):
         if data.room_id in rooms_ids_for_book:
             new_booking = await self.add(data)
         else:
-            raise HTTPException(status_code=403, detail = "Невозможно забронировать данный номер")
+            raise HTTPException(status_code=500)

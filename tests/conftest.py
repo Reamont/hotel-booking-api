@@ -34,6 +34,11 @@ async def db():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
         yield db
 
+@pytest.fixture(scope="module")
+async def db_module():
+    async with DBManager(session_factory=async_session_maker_null_pool) as db:
+        yield db
+
 app.dependency_overrides[get_db] = get_db_null_pool
 
 @pytest.fixture(scope="session", autouse=True)
