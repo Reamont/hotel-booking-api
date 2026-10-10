@@ -16,23 +16,22 @@ async def get_me(user_id: UserIdDep, db: DBdep):
 
 
 @router.post("")
-async def create_booking(
-    user_id: UserIdDep,
-    db: DBdep,
-    booking_data: BookingAddRequest
+async def add_booking(
+        user_id: UserIdDep,
+        db: DBdep,
+        booking_data: BookingAddRequest,
 ):
     room = await db.rooms.get_one_or_none(id=booking_data.room_id)
-    if room is None:
-        raise HTTPException(status_code=404, detail="Номер не найден")
+    hotel = await db.hotels.get_one_or_none(id=room.hotel_id)
     room_price: int = room.price
-
-    add_booking_data = BookingAdd(user_id=user_id,
-                                  price=room_price,
-                                  **booking_data.model_dump())
-
-    booking = await db.bookings.add(add_booking_data)
+    _booking_data = BookingAdd(
+        user_id=user_id,
+        price=room_price,
+        **booking_data.model_dump(),
+    )
+    booking = await db.bookings.add_booking(_booking_data, hotel_id=hotel.id)
     await db.commit()
-    return {"status": "OK"}
+    return {"status": "OK", "data": booking}
 
 
 

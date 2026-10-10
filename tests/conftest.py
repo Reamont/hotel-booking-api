@@ -2,6 +2,9 @@ import os
 import json
 os.environ["MODE"] = "TEST"
 
+from unittest import mock
+mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
+
 from app.tasks.celery_app import celery_instance
 
 import pytest
@@ -66,6 +69,15 @@ async def create_user(ac, setup_database):
             "password": "91867527"
             })
 
+@pytest.fixture(scope="session")
+async def authenticated_ac(create_user, ac):
+    await ac.post("/auth/login",
+        json={
+            "email": "minimax@mail.ru",
+            "password": "91867527"
+            })
+    assert ac.cookies["access_token"]
+    yield ac
 
 celery_instance.conf.update(
     task_always_eager=True,

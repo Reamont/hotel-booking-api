@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, HTTPException, Response
 
 from app.schemas.users import UserRequestAdd, UserAdd
