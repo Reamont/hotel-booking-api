@@ -34,6 +34,7 @@ async def lifespan(app: FastAPI):
     await redis_manager.close()
     print("Приложение остановлено")
 
+
 app = FastAPI(lifespan=lifespan)
 
 

@@ -7,10 +7,11 @@ from app.services.auth import AuthServices
 
 router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
 
-@router.post('/register')
+
+@router.post("/register")
 async def register_user(data: UserRequestAdd, db: DBdep):
     hashed_password = AuthServices().hash_password(data.password)
-    new_user_data = UserAdd(email = data.email, hashed_password=hashed_password)
+    new_user_data = UserAdd(email=data.email, hashed_password=hashed_password)
     try:
         await db.users.add(new_user_data)
         await db.commit()
@@ -18,11 +19,12 @@ async def register_user(data: UserRequestAdd, db: DBdep):
         raise HTTPException(status_code=400, detail="Пользователь с таким email уже существует")
     return {"status": "OK"}
 
+
 @router.post("/login")
 async def login_user(
-        data: UserRequestAdd,
-        response: Response,
-        db: DBdep,
+    data: UserRequestAdd,
+    response: Response,
+    db: DBdep,
 ):
     user = await db.users.get_user_with_hashed_password(email=data.email)
     if not user:
@@ -33,16 +35,14 @@ async def login_user(
     response.set_cookie("access_token", access_token)
     return {"access_token": access_token}
 
+
 @router.get("/me")
 async def get_me(user_id: UserIdDep, db: DBdep):
     user = await db.users.get_one_or_none(id=user_id)
     return user
 
+
 @router.post("/logout")
 async def logout(response: Response):
     response.delete_cookie("access_token")
     return {"status": "OK"}
-
-
-
-        

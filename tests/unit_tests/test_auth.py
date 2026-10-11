@@ -8,10 +8,10 @@ def test_create_access_token():
     assert jwt_token
     assert isinstance(jwt_token, str)
 
+
 def test_hashed_password():
     data = {"password": "12345643"}
     hashed_password = AuthServices().hash_password(data["password"])
 
     assert hashed_password
     assert isinstance(hashed_password, str)
-

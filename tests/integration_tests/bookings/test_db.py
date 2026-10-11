@@ -30,7 +30,7 @@ async def test_add_booking(db):
     assert updated_booking
     assert updated_booking.date_from == updated_date
 
-    await db.bookings.delete(id = new_booking.id)
+    await db.bookings.delete(id=new_booking.id)
     booking = await db.bookings.get_one_or_none(id=new_booking.id)
     assert booking is None
 

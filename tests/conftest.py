@@ -26,19 +26,23 @@ from app.utils.db_manager import DBManager
 def check_test_mode():
     assert settings.MODE == "TEST"
 
+
 async def get_db_null_pool():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
-            yield db
+        yield db
+
 
 @pytest.fixture(scope="function")
 async def db():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
         yield db
 
+
 @pytest.fixture(scope="module")
 async def db_module():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
         yield db
+
 
 app.dependency_overrides[get_db] = get_db_null_pool
 
@@ -71,23 +75,18 @@ async def ac():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
 
+
 @pytest.fixture(scope="session", autouse=True)
 async def create_user(ac, setup_database):
-    await ac.post("/auth/register", 
-        json={
-            "email": "minimax@mail.ru",
-            "password": "91867527"
-            })
+    await ac.post("/auth/register", json={"email": "minimax@mail.ru", "password": "91867527"})
+
 
 @pytest.fixture(scope="session")
 async def authenticated_ac(create_user, ac):
-    await ac.post("/auth/login",
-        json={
-            "email": "minimax@mail.ru",
-            "password": "91867527"
-            })
+    await ac.post("/auth/login", json={"email": "minimax@mail.ru", "password": "91867527"})
     assert ac.cookies["access_token"]
     yield ac
+
 
 celery_instance.conf.update(
     task_always_eager=True,

@@ -21,9 +21,7 @@ class BookingRepository(BaseRepository):
 
     async def add_booking(self, data: BookingAdd, hotel_id: int):
         rooms_ids_to_get = rooms_ids_for_booking(
-            date_from=data.date_from,
-            date_to=data.date_to,
-            hotel_id=hotel_id
+            date_from=data.date_from, date_to=data.date_to, hotel_id=hotel_id
         )
         rooms_ids_to_get_res = await self.session.execute(rooms_ids_to_get)
         rooms_ids_for_book: list[int] = rooms_ids_to_get_res.scalars().all()

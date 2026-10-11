@@ -22,16 +22,18 @@ def get_token(request: Request):
         raise HTTPException(status_code=401, detail="Отсутствие токена аутентификации")
     return token
 
+
 def get_current_user_id(token: str = Depends(get_token)):
     data = AuthServices().decode_jwt(token=token)
     return data["user_id"]
 
-UserIdDep = Annotated[int, Depends(get_current_user_id)]
 
+UserIdDep = Annotated[int, Depends(get_current_user_id)]
 
 
 async def get_db():
     async with DBManager(session_factory=async_session_maker) as db:
         yield db
+
 
 DBdep = Annotated[DBManager, Depends(get_db)]

@@ -5,7 +5,8 @@ from pydantic import BaseModel
 from app.database import Base
 
 DBmodelType = TypeVar("DBmodelType", bound=Base)
-SchemaType = TypeVar("SchemaType", bound = BaseModel)
+SchemaType = TypeVar("SchemaType", bound=BaseModel)
+
 
 class DataMapper:
     db_model: DBmodelType
@@ -13,7 +14,7 @@ class DataMapper:
 
     @classmethod
     def map_to_domain_entity(cls, data):
-        return cls.schema.model_validate(data, from_attributes = True)
+        return cls.schema.model_validate(data, from_attributes=True)
 
     @classmethod
     def map_to_persistence_entity(cls, data):

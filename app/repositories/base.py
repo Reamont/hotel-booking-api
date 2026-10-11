@@ -10,13 +10,9 @@ class BaseRepository:
 
     def __init__(self, session):
         self.session = session
-   
+
     async def get_filtered(self, *filter, **filter_by):
-        query = (
-            select(self.model)
-            .filter(*filter)
-            .filter_by(**filter_by)
-        )
+        query = select(self.model).filter(*filter).filter_by(**filter_by)
         result = await self.session.execute(query)
         return [self.mapper.map_to_domain_entity(model) for model in result.scalars().all()]
 
@@ -40,7 +36,7 @@ class BaseRepository:
     async def add_many(self, data: list[BaseModel]):
         add_data_stmt = insert(self.model).values([item.model_dump() for item in data])
         await self.session.execute(add_data_stmt)
-    
+
     async def update(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
         update_stmt = (
             update(self.model)
@@ -52,5 +48,3 @@ class BaseRepository:
     async def delete(self, **filters):
         delete_stmt = delete(self.model).filter_by(**filters)
         await self.session.execute(delete_stmt)
-    
-    
