@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel
+
 
 class FacilitiesAdd(BaseModel):
     title: str

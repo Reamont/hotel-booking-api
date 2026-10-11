@@ -1,10 +1,11 @@
-from datetime import datetime, timezone, timedelta
-from fastapi import HTTPException
+from datetime import UTC, datetime, timedelta
 
-from passlib.context import CryptContext
 import jwt
+from fastapi import HTTPException
+from passlib.context import CryptContext
 
-from app.config  import settings
+from app.config import settings
+
 
 class AuthServices:
 
@@ -18,7 +19,7 @@ class AuthServices:
 
     def create_access_token(self, data: dict) -> str:
         to_encode = data.copy()
-        expire = datetime.now(timezone.utc) + timedelta(minutes= settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(UTC) + timedelta(minutes= settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         to_encode |= {"exp": expire}
         encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
         return encoded_jwt

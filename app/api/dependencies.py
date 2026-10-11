@@ -1,12 +1,11 @@
 from typing import Annotated
-from fastapi import HTTPException
 
-from fastapi import Depends, Query, Request
+from fastapi import Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
+from app.database import async_session_maker
 from app.services.auth import AuthServices
 from app.utils.db_manager import DBManager
-from app.database import async_session_maker
 
 
 class PaginationParams(BaseModel):

@@ -1,12 +1,13 @@
 import asyncio
-
-from app.tasks.celery_app import celery_instance
-from time import sleep
-from PIL import Image
 import os
+from time import sleep
 
-from app.utils.db_manager import DBManager
+from PIL import Image
+
 from app.database import async_session_maker_null_pool
+from app.tasks.celery_app import celery_instance
+from app.utils.db_manager import DBManager
+
 
 @celery_instance.task
 def test_task():

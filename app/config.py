@@ -1,7 +1,6 @@
 import os
-from typing import Literal
-from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 env_file = ".env-test" if os.getenv("MODE") == "TEST" else ".env"
 

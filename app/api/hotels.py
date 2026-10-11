@@ -1,16 +1,11 @@
 from datetime import date
+from typing import Annotated
 
-from fastapi import Query, APIRouter, Body
-
-from app.api.dependencies import PaginationDep
-from app.api.dependencies import DBdep
-
-from app.schemas.hotels import Hotel, HotelAdd, HotelPATCH
-
+from fastapi import APIRouter, Body, Query
 from fastapi_cache.decorator import cache
 
-
-
+from app.api.dependencies import DBdep, PaginationDep
+from app.schemas.hotels import HotelAdd, HotelPATCH
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
@@ -20,10 +15,11 @@ router = APIRouter(prefix="/hotels", tags=["Отели"])
 async def get_hotels(
         pagination: PaginationDep,
         db: DBdep,
-        title: str | None = Query(None, description="Название отеля"),
-        location: str | None = Query(None, description="Расположение отеля"),
-        date_from: date = Query(examples=["2024-08-01"]),
-        date_to: date = Query(examples=["2024-08-10"])
+        *,
+        title: Annotated[str | None, Query(description="Название отеля")] = None,
+        location: Annotated[str | None, Query(description="Расположение отеля")] = None,
+        date_from: Annotated[date, Query(examples=["2024-08-01"])],
+        date_to: Annotated[date, Query(examples=["2024-08-10"])],
 ):
     per_page = pagination.per_page or 10
     return await db.hotels.get_filtered_by_time(date_from=date_from,
@@ -39,7 +35,7 @@ async def get_hotel(hotel_id: int, db: DBdep):
  
 
 @router.post("")
-async def create_hotel(db: DBdep, hotel_data: HotelAdd = Body(openapi_examples={
+async def create_hotel(db: DBdep, hotel_data: Annotated[HotelAdd, Body(openapi_examples={
     "1": {
         "summary": "Сочи",
         "value": {
@@ -54,7 +50,7 @@ async def create_hotel(db: DBdep, hotel_data: HotelAdd = Body(openapi_examples={
             "location": "Дубай, ул.отелей, 3",
         }
     }
-})
+})]
 ):
     hotel = await db.hotels.add(hotel_data)
     await db.commit()
@@ -91,4 +87,4 @@ async def delete_hotel(hotel_id: int, db: DBdep):
     await db.commit()
     return {"status": "OK"}
 
-    
+    

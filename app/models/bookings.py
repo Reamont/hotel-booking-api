@@ -1,10 +1,11 @@
 from datetime import date
 
-from sqlalchemy.orm import Mapped, mapped_column 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
+
 
 class BookingOrm(Base):
     __tablename__ = "bookings"

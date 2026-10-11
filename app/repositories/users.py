@@ -1,9 +1,11 @@
-from app.repositories.base import BaseRepository
-from app.models.users import UsersOrm
-from app.schemas.users import User, UserWithHashedPassword
 from pydantic import EmailStr
 from sqlalchemy import select
+
+from app.models.users import UsersOrm
+from app.repositories.base import BaseRepository
 from app.repositories.mappers.mappers import UserDataMapper
+from app.schemas.users import UserWithHashedPassword
+
 
 class UsersRepository(BaseRepository):
     model = UsersOrm

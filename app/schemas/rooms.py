@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel
 
 from app.schemas.facilities import Facilities
+
 
 class RoomAddRequest(BaseModel):
     title: str

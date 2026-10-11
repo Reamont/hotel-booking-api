@@ -1,10 +1,11 @@
 from datetime import date
+from typing import Annotated
 
 from fastapi import APIRouter, Body, Query
 
 from app.api.dependencies import DBdep
 from app.schemas.facilities import RoomsFacilitiesAdd
-from app.schemas.rooms import RoomAddRequest, RoomAdd, RoomPatch, RoomPatchRequest
+from app.schemas.rooms import RoomAdd, RoomAddRequest, RoomPatch, RoomPatchRequest
 
 router = APIRouter(prefix="/hotel", tags=["Номера"])
 
@@ -12,8 +13,8 @@ router = APIRouter(prefix="/hotel", tags=["Номера"])
 async def get_rooms(
     hotel_id: int, 
     db: DBdep,
-    date_from: date = Query(examples=["2026-09-03"]),
-    date_to: date = Query(examples=["2026-09-03"])
+    date_from: Annotated[date, Query(examples=["2026-09-03"])],
+    date_to: Annotated[date, Query(examples=["2026-09-03"])],
     ):
     return await db.rooms.get_filtered_by_time(hotel_id=hotel_id,date_from=date_from, date_to=date_to)
 
@@ -26,7 +27,7 @@ async def get_room(hotel_id: int, room_id: int, db: DBdep):
 
 
 @router.post("/{hotel_id}/rooms")
-async def create_room(hotel_id: int, db: DBdep, room_data: RoomAddRequest = Body()):
+async def create_room(hotel_id: int, db: DBdep, room_data: Annotated[RoomAddRequest, Body()]):
     add_room_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
     room = await db.rooms.add(add_room_data)
 

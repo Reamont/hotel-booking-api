@@ -1,24 +1,25 @@
-import os
+import asyncio
 import json
+import os
+
 os.environ["MODE"] = "TEST"
 
 from unittest import mock
+
 mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
 
-from app.tasks.celery_app import celery_instance
-
 import pytest
+from httpx import ASGITransport, AsyncClient
+
 from app.api.dependencies import get_db
+from app.config import settings
+from app.database import Base, async_session_maker_null_pool, engine_null_pool
+from app.main import app
+from app.models import *
 from app.schemas.hotels import HotelAdd
 from app.schemas.rooms import RoomAdd
-from app.config import settings
-from app.database import Base, engine_null_pool
-from app.models import *
-from httpx import ASGITransport, AsyncClient
-from app.main import app
-
+from app.tasks.celery_app import celery_instance
 from app.utils.db_manager import DBManager
-from app.database import async_session_maker_null_pool
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -41,16 +42,20 @@ async def db_module():
 
 app.dependency_overrides[get_db] = get_db_null_pool
 
+
+def load_json(path: str):
+    with open(path, encoding="utf-8") as file:
+        return json.load(file)
+
+
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database(check_test_mode):
     async with engine_null_pool.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-    with open("tests/mock_hotels.json", encoding="utf-8") as file_hotels:
-        hotels = json.load(file_hotels)
-    with open("tests/mock_rooms.json", encoding="utf-8") as file_rooms:
-        rooms = json.load(file_rooms)
+    hotels = await asyncio.to_thread(load_json, "tests/mock_hotels.json")
+    rooms = await asyncio.to_thread(load_json, "tests/mock_rooms.json")
 
     hotels = [HotelAdd.model_validate(hotel) for hotel in hotels]
     rooms = [RoomAdd.model_validate(room) for room in rooms]

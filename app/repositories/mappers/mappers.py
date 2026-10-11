@@ -1,9 +1,9 @@
 from app.models.bookings import BookingOrm
 from app.models.facilities import FacilitiesOrm, RoomsFacilitiesOrm
+from app.models.hotels import HotelsOrm
 from app.models.rooms import RoomsOrm
 from app.models.users import UsersOrm
 from app.repositories.mappers.base import DataMapper
-from app.models.hotels import HotelsOrm
 from app.schemas.bookings import Booking
 from app.schemas.facilities import Facilities, RoomsFacilities
 from app.schemas.hotels import Hotel

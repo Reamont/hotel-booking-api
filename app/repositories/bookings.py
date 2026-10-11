@@ -1,14 +1,14 @@
 from datetime import date
 
+from fastapi import HTTPException
 from sqlalchemy import select
 
-from fastapi import HTTPException
-
-from app.repositories.base import BaseRepository
 from app.models.bookings import BookingOrm
+from app.repositories.base import BaseRepository
 from app.repositories.mappers.mappers import BookingDataMapper
-from app.schemas.bookings import BookingAdd
 from app.repositories.utils import rooms_ids_for_booking
+from app.schemas.bookings import BookingAdd
+
 
 class BookingRepository(BaseRepository):
     model = BookingOrm
@@ -28,6 +28,6 @@ class BookingRepository(BaseRepository):
         rooms_ids_to_get_res = await self.session.execute(rooms_ids_to_get)
         rooms_ids_for_book: list[int] = rooms_ids_to_get_res.scalars().all()
         if data.room_id in rooms_ids_for_book:
-            new_booking = await self.add(data)
+            await self.add(data)
         else:
             raise HTTPException(status_code=500)
