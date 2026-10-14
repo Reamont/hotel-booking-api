@@ -1,5 +1,8 @@
+from pydantic import BaseModel
 from sqlalchemy import delete, insert, select
+from sqlalchemy.exc import IntegrityError
 
+from app.exceptions import FacilityNotFoundException
 from app.models.facilities import FacilitiesOrm, RoomsFacilitiesOrm
 from app.repositories.base import BaseRepository
 from app.repositories.mappers.mappers import (
@@ -11,11 +14,18 @@ from app.repositories.mappers.mappers import (
 class FacilitiesRepository(BaseRepository):
     model = FacilitiesOrm
     mapper = FacilityDataMapper
+    not_found_exception = FacilityNotFoundException
 
 
 class RoomsFacilitiesRepository(BaseRepository):
     model = RoomsFacilitiesOrm
     mapper = RoomFacilitiesDataMapper
+
+    async def add_many(self, data: list[BaseModel]):
+        try:
+            await super().add_many(data)
+        except IntegrityError:
+            raise FacilityNotFoundException
 
     async def set_room_facilities(self, room_id: int, facilities_ids: list[int]) -> None:
         get_current_facilities_ids_query = select(self.model.facility_id).filter_by(room_id=room_id)
@@ -35,4 +45,7 @@ class RoomsFacilitiesRepository(BaseRepository):
             insert_m2m_facilities_stmt = insert(self.model).values(
                 [{"room_id": room_id, "facility_id": f_id} for f_id in ids_to_insert]
             )
-            await self.session.execute(insert_m2m_facilities_stmt)
+            try:
+                await self.session.execute(insert_m2m_facilities_stmt)
+            except IntegrityError:
+                raise FacilityNotFoundException

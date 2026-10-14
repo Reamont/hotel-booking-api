@@ -1,8 +1,8 @@
 from datetime import date
 
-from fastapi import HTTPException
 from sqlalchemy import select
 
+from app.exceptions import AllRoomsAreBookedException, BookingNotFoundException
 from app.models.bookings import BookingOrm
 from app.repositories.base import BaseRepository
 from app.repositories.mappers.mappers import BookingDataMapper
@@ -13,6 +13,7 @@ from app.schemas.bookings import BookingAdd
 class BookingRepository(BaseRepository):
     model = BookingOrm
     mapper = BookingDataMapper
+    not_found_exception = BookingNotFoundException
 
     async def get_bookings_with_today_checkin(self):
         query = select(self.model).filter(self.model.date_from == date.today())
@@ -25,7 +26,6 @@ class BookingRepository(BaseRepository):
         )
         rooms_ids_to_get_res = await self.session.execute(rooms_ids_to_get)
         rooms_ids_for_book: list[int] = rooms_ids_to_get_res.scalars().all()
-        if data.room_id in rooms_ids_for_book:
-            await self.add(data)
-        else:
-            raise HTTPException(status_code=500)
+        if data.room_id not in rooms_ids_for_book:
+            raise AllRoomsAreBookedException
+        return await self.add(data)

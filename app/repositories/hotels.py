@@ -2,6 +2,7 @@ from datetime import date
 
 from sqlalchemy import func, select
 
+from app.exceptions import HotelNotFoundException
 from app.models.hotels import HotelsOrm
 from app.models.rooms import RoomsOrm
 from app.repositories.base import BaseRepository
@@ -12,6 +13,7 @@ from app.repositories.utils import rooms_ids_for_booking
 class HotelRepository(BaseRepository):
     model = HotelsOrm
     mapper = HotelDataMapper
+    not_found_exception = HotelNotFoundException
 
     async def get_filtered_by_time(
         self, date_from: date, date_to: date, location, title, limit, offset

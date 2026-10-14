@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.dependencies import DBdep, UserIdDep
+from app.exceptions import check_dates
 from app.schemas.bookings import BookingAdd, BookingAddRequest
 
 router = APIRouter(prefix="/booking", tags=["Бронирования"])
@@ -22,14 +23,13 @@ async def add_booking(
     db: DBdep,
     booking_data: BookingAddRequest,
 ):
-    room = await db.rooms.get_one_or_none(id=booking_data.room_id)
-    hotel = await db.hotels.get_one_or_none(id=room.hotel_id)
-    room_price: int = room.price
+    check_dates(booking_data.date_from, booking_data.date_to)
+    room = await db.rooms.get_one(id=booking_data.room_id)
     _booking_data = BookingAdd(
         user_id=user_id,
-        price=room_price,
+        price=room.price,
         **booking_data.model_dump(),
     )
-    booking = await db.bookings.add_booking(_booking_data, hotel_id=hotel.id)
+    booking = await db.bookings.add_booking(_booking_data, hotel_id=room.hotel_id)
     await db.commit()
     return {"status": "OK", "data": booking}

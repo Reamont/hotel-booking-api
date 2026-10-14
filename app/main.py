@@ -3,8 +3,9 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.responses import JSONResponse
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 
@@ -18,6 +19,7 @@ from app.api.images import router as router_images
 from app.api.rooms import router as router_rooms
 from app.config import settings
 from app.database import Base, engine
+from app.exceptions import ApplicationExceptions
 from app.init import redis_manager
 
 
@@ -36,6 +38,11 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+
+@app.exception_handler(ApplicationExceptions)
+async def application_exception_handler(request: Request, exc: ApplicationExceptions):
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
 
 app.include_router(router_auth)
