@@ -5,9 +5,6 @@ from fastapi import HTTPException
 from passlib.context import CryptContext
 
 from app.config import settings
-from app.logger import get_logger
-
-logger = get_logger("auth")
 
 
 class AuthServices:
@@ -29,6 +26,5 @@ class AuthServices:
     def decode_jwt(self, token: str):
         try:
             return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        except jwt.exceptions.InvalidTokenError as e:
-            logger.warning("Невалидный JWT: %s", type(e).__name__)
+        except jwt.exceptions.InvalidTokenError:
             raise HTTPException(status_code=401, detail="Неверный токен")

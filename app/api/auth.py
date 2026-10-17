@@ -2,11 +2,8 @@ from fastapi import APIRouter, HTTPException, Response
 from sqlalchemy.exc import IntegrityError
 
 from app.api.dependencies import DBdep, UserIdDep
-from app.logger import get_logger
 from app.schemas.users import UserAdd, UserRequestAdd
 from app.services.auth import AuthServices
-
-logger = get_logger("auth")
 
 router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
 
@@ -16,12 +13,10 @@ async def register_user(data: UserRequestAdd, db: DBdep):
     hashed_password = AuthServices().hash_password(data.password)
     new_user_data = UserAdd(email=data.email, hashed_password=hashed_password)
     try:
-        user = await db.users.add(new_user_data)
+        await db.users.add(new_user_data)
         await db.commit()
     except IntegrityError:
-        logger.warning("Повторная регистрация: email уже занят")
         raise HTTPException(status_code=400, detail="Пользователь с таким email уже существует")
-    logger.info("Зарегистрирован пользователь id=%s", user.id)
     return {"status": "OK"}
 
 
@@ -33,14 +28,11 @@ async def login_user(
 ):
     user = await db.users.get_user_with_hashed_password(email=data.email)
     if not user:
-        logger.warning("Неудачный вход: пользователь не найден")
         raise HTTPException(status_code=401, detail="Пользователь с таким email не зарегистрирован")
     if not AuthServices().verify_password(data.password, user.hashed_password):
-        logger.warning("Неудачный вход: неверный пароль для user_id=%s", user.id)
         raise HTTPException(status_code=401, detail="Пароль неверный")
     access_token = AuthServices().create_access_token({"user_id": user.id})
     response.set_cookie("access_token", access_token)
-    logger.info("Пользователь id=%s вошёл в систему", user.id)
     return {"access_token": access_token}
 
 
@@ -53,5 +45,4 @@ async def get_me(user_id: UserIdDep, db: DBdep):
 @router.post("/logout")
 async def logout(response: Response):
     response.delete_cookie("access_token")
-    logger.info("Выход из системы")
     return {"status": "OK"}

@@ -5,10 +5,7 @@ from fastapi import APIRouter, Body, Query
 from fastapi_cache.decorator import cache
 
 from app.api.dependencies import DBdep, PaginationDep
-from app.logger import get_logger
 from app.schemas.hotels import HotelAdd, HotelPATCH
-
-logger = get_logger("hotels")
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
@@ -25,14 +22,6 @@ async def get_hotels(
     date_to: Annotated[date, Query(examples=["2024-08-10"])],
 ):
     per_page = pagination.per_page or 10
-    logger.debug(
-        "Поиск отелей: title=%s, location=%s, %s — %s, page=%s",
-        title,
-        location,
-        date_from,
-        date_to,
-        pagination.page,
-    )
     return await db.hotels.get_filtered_by_time(
         date_from=date_from,
         date_to=date_to,
@@ -75,7 +64,6 @@ async def create_hotel(
 ):
     hotel = await db.hotels.add(hotel_data)
     await db.commit()
-    logger.info("Создан отель id=%s: %s", hotel.id, hotel.title)
 
     return {"status": "OK", "data": hotel}
 
@@ -84,7 +72,6 @@ async def create_hotel(
 async def edit_hotel(hotel_id: int, hotel_data: HotelAdd, db: DBdep):
     await db.hotels.update(hotel_data, id=hotel_id)
     await db.commit()
-    logger.info("Отель id=%s обновлён", hotel_id)
     return {"status": "OK"}
 
 
@@ -96,11 +83,6 @@ async def edit_hotel(hotel_id: int, hotel_data: HotelAdd, db: DBdep):
 async def partially_edit_hotel(hotel_id: int, hotel_data: HotelPATCH, db: DBdep):
     await db.hotels.update(hotel_data, id=hotel_id, exclude_unset=True)
     await db.commit()
-    logger.info(
-        "Отель id=%s частично обновлён, поля: %s",
-        hotel_id,
-        list(hotel_data.model_dump(exclude_unset=True)),
-    )
     return {"status": "OK"}
 
 
@@ -108,5 +90,4 @@ async def partially_edit_hotel(hotel_id: int, hotel_data: HotelPATCH, db: DBdep)
 async def delete_hotel(hotel_id: int, db: DBdep):
     await db.hotels.delete(id=hotel_id)
     await db.commit()
-    logger.info("Отель id=%s удалён", hotel_id)
     return {"status": "OK"}
