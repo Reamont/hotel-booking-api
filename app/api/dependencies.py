@@ -4,8 +4,11 @@ from fastapi import Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
 from app.database import async_session_maker
+from app.logger import get_logger
 from app.services.auth import AuthServices
 from app.utils.db_manager import DBManager
+
+logger = get_logger("auth")
 
 
 class PaginationParams(BaseModel):
@@ -19,6 +22,7 @@ PaginationDep = Annotated[PaginationParams, Depends()]
 def get_token(request: Request):
     token = request.cookies.get("access_token", None)
     if not token:
+        logger.info("Запрос без токена аутентификации: %s", request.url.path)
         raise HTTPException(status_code=401, detail="Отсутствие токена аутентификации")
     return token
 

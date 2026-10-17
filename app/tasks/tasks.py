@@ -5,14 +5,18 @@ from time import sleep
 from PIL import Image
 
 from app.database import async_session_maker_null_pool
+from app.logger import get_logger
 from app.tasks.celery_app import celery_instance
 from app.utils.db_manager import DBManager
+
+logger = get_logger("tasks")
 
 
 @celery_instance.task
 def test_task():
+    logger.info("test_task: старт")
     sleep(5)
-    print("1)")
+    logger.info("test_task: завершена")
 
 
 @celery_instance.task
@@ -20,8 +24,13 @@ def resize_image(image_path: str):
     sizes = [1000, 500, 200]
     output_folder = "app/static/images"
 
+    logger.info("resize_image: обработка %s", image_path)
     # Открываем изображение
-    img = Image.open(image_path)
+    try:
+        img = Image.open(image_path)
+    except OSError:
+        logger.exception("resize_image: не удалось открыть %s", image_path)
+        raise
 
     # Получаем имя файла и его расширение
     base_name = os.path.basename(image_path)
@@ -43,14 +52,14 @@ def resize_image(image_path: str):
         # Сохраняем изображение
         img_resized.save(output_path)
 
-    print(f"Изображение сохранено в следующих размерах: {sizes} в папке {output_folder}")
+    logger.info("Изображение сохранено в следующих размерах: %s в папке %s", sizes, output_folder)
 
 
 async def get_bookings_with_today_checkin_helper():
-    print("Я ЗАПУСКАЮСЬ")
+    logger.debug("booking_today_checkin: старт")
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
         bookings = await db.bookings.get_bookings_with_today_checkin()
-        print(f"{bookings=}")
+        logger.info("booking_today_checkin: бронирований с заездом сегодня: %s", len(bookings))
 
 
 @celery_instance.task(name="booking_today_checkin")

@@ -30,5 +30,7 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
 
+    LOG_LEVEL: str = "INFO"
+
 
 settings = Settings()

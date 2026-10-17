@@ -5,8 +5,11 @@ from fastapi import APIRouter, Body, Query
 
 from app.api.dependencies import DBdep
 from app.exceptions import check_dates
+from app.logger import get_logger
 from app.schemas.facilities import RoomsFacilitiesAdd
 from app.schemas.rooms import RoomAdd, RoomAddRequest, RoomPatch, RoomPatchRequest
+
+logger = get_logger("rooms")
 
 router = APIRouter(prefix="/hotel", tags=["Номера"])
 
@@ -43,6 +46,12 @@ async def create_room(hotel_id: int, db: DBdep, room_data: Annotated[RoomAddRequ
     if room_facilities_data:
         await db.rooms_facilities.add_many(room_facilities_data)
     await db.commit()
+    logger.info(
+        "Создан номер id=%s в отеле id=%s, удобства: %s",
+        room.id,
+        hotel_id,
+        room_data.facilities_ids or [],
+    )
     return {"status": "OK", "data": add_room_data}
 
 
@@ -60,6 +69,7 @@ async def edit_room(
         room_id, facilities_ids=room_data.facilities_ids or []
     )
     await db.commit()
+    logger.info("Номер id=%s в отеле id=%s обновлён", room_id, hotel_id)
     return {"status": "OK"}
 
 
@@ -79,6 +89,12 @@ async def partially_edit_room(
             room_id, facilities_ids=room_data_dict["facilities_ids"] or []
         )
     await db.commit()
+    logger.info(
+        "Номер id=%s в отеле id=%s частично обновлён, поля: %s",
+        room_id,
+        hotel_id,
+        list(room_data_dict),
+    )
     return {"status": "OK"}
 
 
@@ -88,4 +104,5 @@ async def delete_room(hotel_id: int, room_id: int, db: DBdep):
     await db.rooms_facilities.set_room_facilities(room_id, facilities_ids=[])
     await db.rooms.delete(id=room_id, hotel_id=hotel_id)
     await db.commit()
+    logger.info("Номер id=%s в отеле id=%s удалён", room_id, hotel_id)
     return {"status": "OK"}
