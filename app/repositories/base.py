@@ -1,9 +1,13 @@
+import logging
+
 from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from app.exceptions import ObjectNotFoundException
 from app.repositories.mappers.base import DataMapper
+
+logger = logging.getLogger(__name__)
 
 
 class BaseRepository:
@@ -40,10 +44,14 @@ class BaseRepository:
         return self.mapper.map_to_domain_entity(model)
 
     async def add(self, data: BaseModel):
-        add_data_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
-        result = await self.session.execute(add_data_stmt)
-        model = result.scalars().one()
-        return self.mapper.map_to_domain_entity(model)
+        try:
+            add_data_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
+            result = await self.session.execute(add_data_stmt)
+            model = result.scalars().one()
+            return self.mapper.map_to_domain_entity(model)
+        except IntegrityError:
+            logger.exception(f"Не удалось добавить данные в БД, входные данные={data}")
+            raise
 
     async def add_many(self, data: list[BaseModel]):
         add_data_stmt = insert(self.model).values([item.model_dump() for item in data])

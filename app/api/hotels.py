@@ -6,6 +6,7 @@ from fastapi_cache.decorator import cache
 
 from app.api.dependencies import DBdep, PaginationDep
 from app.schemas.hotels import HotelAdd, HotelPATCH
+from app.services.hotels import HotelService
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
@@ -21,20 +22,19 @@ async def get_hotels(
     date_from: Annotated[date, Query(examples=["2024-08-01"])],
     date_to: Annotated[date, Query(examples=["2024-08-10"])],
 ):
-    per_page = pagination.per_page or 10
-    return await db.hotels.get_filtered_by_time(
-        date_from=date_from,
-        date_to=date_to,
+    return await HotelService(db).get_filtered_by_time(
+        page=pagination.page,
+        per_page=pagination.per_page or 10,
         location=location,
         title=title,
-        limit=per_page,
-        offset=(pagination.page - 1) * per_page,
+        date_from=date_from,
+        date_to=date_to,
     )
 
 
 @router.get("/{hotel_id}")
 async def get_hotel(hotel_id: int, db: DBdep):
-    return await db.hotels.get_one_or_none(id=hotel_id)
+    return await HotelService(db).get_hotel(hotel_id)
 
 
 @router.post("")
@@ -62,16 +62,13 @@ async def create_hotel(
         ),
     ],
 ):
-    hotel = await db.hotels.add(hotel_data)
-    await db.commit()
-
+    hotel = await HotelService(db).create_hotel(hotel_data)
     return {"status": "OK", "data": hotel}
 
 
 @router.put("/{hotel_id}")
 async def edit_hotel(hotel_id: int, hotel_data: HotelAdd, db: DBdep):
-    await db.hotels.update(hotel_data, id=hotel_id)
-    await db.commit()
+    await HotelService(db).edit_hotel(hotel_id, hotel_data)
     return {"status": "OK"}
 
 
@@ -81,13 +78,11 @@ async def edit_hotel(hotel_id: int, hotel_data: HotelAdd, db: DBdep):
     description="<h1>Тут мы частично обновляем данные об отеле: можно отправить name, а можно title</h1>",
 )
 async def partially_edit_hotel(hotel_id: int, hotel_data: HotelPATCH, db: DBdep):
-    await db.hotels.update(hotel_data, id=hotel_id, exclude_unset=True)
-    await db.commit()
+    await HotelService(db).partially_edit_hotel(hotel_id, hotel_data)
     return {"status": "OK"}
 
 
 @router.delete("/{hotel_id}")
 async def delete_hotel(hotel_id: int, db: DBdep):
-    await db.hotels.delete(id=hotel_id)
-    await db.commit()
+    await HotelService(db).delete_hotel(hotel_id)
     return {"status": "OK"}

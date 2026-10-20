@@ -1,8 +1,9 @@
 from datetime import date
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 
-from app.exceptions import HotelNotFoundException
+from app.exceptions import HotelHasRoomsException, HotelNotFoundException
 from app.models.hotels import HotelsOrm
 from app.models.rooms import RoomsOrm
 from app.repositories.base import BaseRepository
@@ -34,3 +35,9 @@ class HotelRepository(BaseRepository):
         result = await self.session.execute(query)
 
         return [self.mapper.map_to_domain_entity(hotel) for hotel in result.scalars().all()]
+
+    async def delete(self, **filters):
+        try:
+            await super().delete(**filters)
+        except IntegrityError:
+            raise HotelHasRoomsException

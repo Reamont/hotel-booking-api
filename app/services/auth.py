@@ -6,8 +6,10 @@ from passlib.context import CryptContext
 
 from app.config import settings
 
+from app.services.base import BaseService
 
-class AuthServices:
+
+class AuthServices(BaseService):
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__ident="2b")
 
     def verify_password(self, plain_password, hashed_password):

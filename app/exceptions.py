@@ -42,6 +42,11 @@ class RoomHasBookingsException(ApplicationExceptions):
     detail = "Нельзя удалить номер, на который есть бронирования"
 
 
+class HotelHasRoomsException(ApplicationExceptions):
+    status_code = 409
+    detail = "Нельзя удалить отель, в котором есть номера"
+
+
 class IncorrectDatesException(ApplicationExceptions):
     status_code = 400
     detail = "Дата выезда должна быть позже даты заезда"
